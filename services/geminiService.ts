@@ -1,91 +1,103 @@
 import { GoogleGenAI } from "@google/genai";
 import { StrategicBrief, Source } from "../types";
 
-// Helper for local development SDK usage
 const generateLocalBrief = async (): Promise<StrategicBrief> => {
-  // ... [Insert the existing SDK logic here but condensed] ...
-  // To save space and ensure code reuse, I will just copy the core logic here or better yet:
-  // Actually, duplicating the logic is risky. 
-  // Best practice: The client should ALWAYS use the API route in production.
-  // In local dev, we can point the API route to ... wait, Vite doesn't allow that easily without backend.
+  // CORRECCIÓN: Vite usa import.meta.env en lugar de process.env
+  // Asegúrate de que en Vercel la variable se llame VITE_GEMINI_API_KEY
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) throw new Error("Missing VITE_GEMINI_API_KEY");
 
-  // Proposal: Keep the Logic here for now, but mark it "DEV ONLY".
-  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("Missing API Key");
+  const genAI = new GoogleGenAI(apiKey);
 
-  const ai = new GoogleGenAI({ apiKey });
-  const today = new Date().toLocaleDateString('es-XM', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-  const response = await ai.models.generateContent({
+  // CORRECCIÓN: Usar el modelo gemini-2.0-flash (es el que tiene cuota en tu lista)
+  // Nota: Si el modelo 2.5 da error de cuota, cámbialo a "gemini-1.5-flash"
+  const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
-    contents: [{
-      role: "user",
-      parts: [{
-        text: `Actúa como un Ingeniero de Software Senior y Estratega de Oil & Gas. Tu misión es mantener y actualizar una Terminal de Inteligencia de Negocios para ejecutivos de alto nivel.
-              
-              CRITICAL INSTRUCTION: You must return ONLY valid JSON code. Do not wrap it in markdown code blocks like \`\`\`json. Just the raw JSON string.
-
-              Cada vez que se ejecute la función de actualización, realiza una búsqueda en tiempo real usando Google Search (si tienes acceso) o usa tu base de conocimiento sobre datos recientes del sector energético en México. Transforma los hallazgos en una respuesta JSON. Asegúrate de que cada 'implicación' responda a la pregunta: ¿Cómo afecta esto al flujo de caja o a la operatividad del sector?
-              
-              FECHA DE HOY: ${today}
-
-              ESTRUCTURA DE INVESTIGACIÓN (Inamovible):
-              1. PEMEX: Análisis de liquidez, deuda financiera (SHCP), producción de refinados y combate al mercado ilícito (huachicol).
-              2. PRIVADOS (E&P): Monitoreo de contratos, asociaciones público-privadas (Zama, Trión) y postura regulatoria de la SENER.
-              3. MACROECONOMÍA PETROLERA: Seguimiento de precios Brent, WTI y Mezcla Mexicana; proyecciones de oferta/demanda global y volatilidad geopolítica.
-
-              Devuelve un objeto JSON con esta estructura exacta:
-              {
-                "lastUpdated": "Fecha formateada del reporte",
-                "pillars": [
-                  { "title": "...", "sentiment": "BULLISH" | "BEARISH" | "NEUTRAL", "context": "...", "implication": "..." }
-                ],
-                "macro": { 
-                  "sentiment": "BULLISH" | "BEARISH" | "NEUTRAL", 
-                  "description": "...", 
-                  "recommendation": "..." 
-                },
-                "actions": [
-                  { "focus": "...", "risk": "...", "action": "..." }
-                ]
-              }`
-      }]
-    }],
-    config: {}
+    // CORRECCIÓN: Añadimos la herramienta de búsqueda para noticias reales
+    tools: [{ googleSearch: {} }]
   });
 
-  const rawText = response.text || '';
+  const today = new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  const prompt = `Actúa como un Ingeniero de Software Senior y Estratega de Oil & Gas. Tu misión es mantener y actualizar una Terminal de Inteligencia de Negocios para ejecutivos de alto nivel.
+              
+    CRITICAL INSTRUCTION: You must return ONLY valid JSON code. Do not wrap it in markdown code blocks like \`\`\`json. Just the raw JSON string.
+
+    Realiza una búsqueda en tiempo real usando Google Search sobre datos recientes (HOY) del sector energético en México y global. Transforma los hallazgos en una respuesta JSON. Asegúrate de que cada 'implicación' responda a la pregunta: ¿Cómo afecta esto al flujo de caja o a la operatividad del sector?
+    
+    FECHA DE HOY: ${today}
+
+    ESTRUCTURA DE INVESTIGACIÓN (Inamovible):
+    1. PEMEX: Análisis de liquidez, deuda financiera (SHCP), producción de refinados y combate al mercado ilícito (huachicol).
+    2. PRIVADOS (E&P): Monitoreo de contratos, asociaciones público-privadas (Zama, Trión) y postura regulatoria de la SENER.
+    3. MACROECONOMÍA PETROLERA: Seguimiento de precios Brent, WTI y Mezcla Mexicana; proyecciones de oferta/demanda global y volatilidad geopolítica.
+
+    Devuelve un objeto JSON con esta estructura exacta:
+    {
+      "lastUpdated": "Fecha formateada del reporte",
+      "pillars": [
+        { "title": "...", "sentiment": "BULLISH" | "BEARISH" | "NEUTRAL", "context": "...", "implication": "..." }
+      ],
+      "macro": { 
+        "sentiment": "BULLISH" | "BEARISH" | "NEUTRAL", 
+        "description": "...", 
+        "recommendation": "..." 
+      },
+      "actions": [
+        { "focus": "...", "risk": "...", "action": "..." }
+      ]
+    }`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const rawText = response.text();
+
   let brief;
   try {
-    brief = JSON.parse(rawText);
-  } catch (e) {
+    // Intentar limpiar el texto por si la IA añade markdown
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     brief = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+  } catch (e) {
+    console.error("Error parsing JSON from Gemini:", rawText);
+    throw new Error("La IA no devolvió un formato JSON válido.");
   }
-  return brief;
+
+  // Extraer fuentes de búsqueda si están disponibles
+  const globalSources: Source[] = [];
+  const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
+  if (groundingMetadata?.groundingChunks) {
+    groundingMetadata.groundingChunks.forEach((chunk: any) => {
+      if (chunk.web?.uri) {
+        globalSources.push({
+          uri: chunk.web.uri,
+          title: chunk.web.title || "Fuente de información"
+        });
+      }
+    });
+  }
+
+  return {
+    ...brief,
+    globalSources: globalSources.filter((v, i, a) => a.findIndex(t => t.uri === v.uri) === i).slice(0, 5)
+  };
 };
 
 export const generateStrategicBrief = async (): Promise<StrategicBrief> => {
-  // Hybrid Strategy:
-  // If we are in Dev mode and have a key, we can run locally.
-  // In Production, we MUST use the API endpoint to hide the key.
-
   const isDev = import.meta.env.DEV;
 
-  if (isDev) {
-    console.log("Environment: DEV (Using direct SDK)");
-    return generateLocalBrief();
-  } else {
-    console.log("Environment: PROD (Using Serverless API)");
-    try {
+  // Si no tienes configurado un backend en Vercel (/api/brief), 
+  // lo más seguro es ejecutar la lógica directamente en el cliente.
+  try {
+    // Intentamos ejecutar localmente primero (funciona en Vercel si la Key tiene prefijo VITE_)
+    return await generateLocalBrief();
+  } catch (e) {
+    console.error("Error en la generación directa:", e);
+    // Solo si falla y tienes un endpoint real en Vercel, intentamos el fetch
+    if (!isDev) {
       const res = await fetch('/api/brief');
       if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      return data;
-    } catch (e) {
-      console.error("Failed to fetch from API:", e);
-      throw e;
+      return await res.json();
     }
+    throw e;
   }
 };
