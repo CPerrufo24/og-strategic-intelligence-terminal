@@ -28,32 +28,42 @@ const generateLocalBrief = async (): Promise<StrategicBrief> => {
 
   const today = new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  const prompt = `Actúa como un Ingeniero de Software Senior y Estratega de Oil & Gas. Tu misión es mantener y actualizar una Terminal de Inteligencia de Negocios para ejecutivos de alto nivel.
-            
-    CRITICAL INSTRUCTION: You must return ONLY valid JSON code. Do not wrap it in markdown code blocks like \`\`\`json. Just the raw JSON string.
-
-    Realiza una búsqueda en tiempo real usando Google Search sobre datos recientes (HOY) del sector energético en México y global. Transforma los hallazgos en una respuesta JSON. Asegúrate de que cada 'implicación' responda a la pregunta: ¿Cómo afecta esto al flujo de caja o a la operatividad del sector?
+  const prompt = `Actúa como un Experto en Planeación Estratégica de la industria Oil & Gas con enfoque en Inteligencia de Mercados. 
     
-    FECHA DE HOY: ${today}
+    Tu misión es generar el "Briefing Matutino de Inteligencia": una recopilación y análisis de las noticias más relevantes de HOY (${today}) que impactan al sector petrolero.
 
-    ESTRUCTURA DE INVESTIGACIÓN (Inamovible):
-    1. PEMEX: Análisis de liquidez, deuda financiera (SHCP), producción de refinados y combate al mercado ilícito (huachicol).
-    2. PRIVADOS (E&P): Monitoreo de contratos, asociaciones público-privadas (Zama, Trión) y postura regulatoria de la SENER.
-    3. MACROECONOMÍA PETROLERA: Seguimiento de precios Brent, WTI y Mezcla Mexicana; proyecciones de oferta/demanda global y volatilidad geopolítica.
+    INSTRUCCIONES DE BÚSQUEDA (Prioridad Alta):
+    1. Utiliza Google Search para identificar los eventos más significativos de esta mañana en:
+       - Sector petrolero (upstream, midstream, downstream).
+       - Cambios regulatorios, proyecciones de producción o anuncios gubernamentales.
+       - Estudios rigurosos de variables macroeconómicas (precios spot, inflación, tipos de cambio, demanda global).
+       - Otros indicadores clave (inventarios de la EIA, decisiones de la OPEP+, geopolítica).
 
-    Devuelve un objeto JSON con esta estructura exacta:
+    CRITICAL INSTRUCTION: Return ONLY a raw JSON string. No markdown, no text before or after.
+
+    ESTRUCTURA DEL ANÁLISIS (Basada en relevancia del día):
+    - PILLARS: Identifica los 2 temas de mayor impacto hoy (pueden ser sobre PEMEX, empresas internacionales o nuevas tecnologías/estudios).
+    - MACRO: Analiza las proyecciones y variables macroeconómicas que están moviendo el mercado en este momento.
+    - ACTIONS: Traduce las noticias en recomendaciones tácticas para ejecutivos de la industria.
+
+    Devuelve este esquema JSON exacto:
     {
-      "lastUpdated": "Fecha formateada del reporte",
+      "lastUpdated": "Reporte Estratégico - ${today}",
       "pillars": [
-        { "title": "...", "sentiment": "BULLISH" | "BEARISH" | "NEUTRAL", "context": "...", "implication": "..." }
+        { 
+          "title": "Título de la Noticia/Tema más Relevante", 
+          "sentiment": "BULLISH" | "BEARISH" | "NEUTRAL", 
+          "context": "Resumen ejecutivo de la noticia o estudio encontrado hoy.", 
+          "implication": "¿Cómo impacta esto específicamente en la rentabilidad, operatividad o proyecciones del sector?" 
+        }
       ],
       "macro": { 
         "sentiment": "BULLISH" | "BEARISH" | "NEUTRAL", 
-        "description": "...", 
-        "recommendation": "..." 
+        "description": "Análisis de indicadores (Brent/WTI, tasas, proyecciones OPEP) detectados en las noticias de esta mañana.", 
+        "recommendation": "Recomendación estratégica basada en el entorno macro actual." 
       },
       "actions": [
-        { "focus": "...", "risk": "...", "action": "..." }
+        { "focus": "Área de enfoque", "risk": "Riesgo detectado hoy", "action": "Acción mitigante recomendada" }
       ]
     }`;
 
