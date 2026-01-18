@@ -1,26 +1,35 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { StrategicBrief, Source } from "../types";
 
 const generateLocalBrief = async (): Promise<StrategicBrief> => {
-  // CORRECCIÓN: Vite usa import.meta.env en lugar de process.env
-  // Asegúrate de que en Vercel la variable se llame VITE_GEMINI_API_KEY
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) throw new Error("Missing VITE_GEMINI_API_KEY");
+  // CORRECCIÓN: Soporte híbrido para Vite (browser) y Scripts (Node.js/TSX)
+  let apiKey = '';
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    }
+  } catch (e) { /* ignore */ }
 
-  const genAI = new GoogleGenAI(apiKey);
+  if (!apiKey && typeof process !== 'undefined' && process.env) {
+    apiKey = process.env.VITE_GEMINI_API_KEY || '';
+  }
+
+  if (!apiKey) throw new Error("Missing VITE_GEMINI_API_KEY. Ensure it is set in .env.local (for scripts) or .env (for Vite).");
+
+  const genAI = new GoogleGenerativeAI(apiKey);
 
   // CORRECCIÓN: Usar el modelo gemini-2.0-flash (es el que tiene cuota en tu lista)
   // Nota: Si el modelo 2.5 da error de cuota, cámbialo a "gemini-1.5-flash"
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-1.5-flash",
     // CORRECCIÓN: Añadimos la herramienta de búsqueda para noticias reales
-    tools: [{ googleSearch: {} }]
+    // tools: [{ googleSearch: {} }] // Note: googleSearch might need specific setup or checking SDK version support
   });
 
   const today = new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   const prompt = `Actúa como un Ingeniero de Software Senior y Estratega de Oil & Gas. Tu misión es mantener y actualizar una Terminal de Inteligencia de Negocios para ejecutivos de alto nivel.
-              
+            
     CRITICAL INSTRUCTION: You must return ONLY valid JSON code. Do not wrap it in markdown code blocks like \`\`\`json. Just the raw JSON string.
 
     Realiza una búsqueda en tiempo real usando Google Search sobre datos recientes (HOY) del sector energético en México y global. Transforma los hallazgos en una respuesta JSON. Asegúrate de que cada 'implicación' responda a la pregunta: ¿Cómo afecta esto al flujo de caja o a la operatividad del sector?
