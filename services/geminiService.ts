@@ -18,26 +18,36 @@ const generateLocalBrief = async (): Promise<StrategicBrief> => {
   const genAI = new GoogleGenerativeAI(apiKey);
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-3-flash",
     // CORRECCIÓN 1: Forzamos el tipo 'as any' para que acepte googleSearch
     tools: [{ googleSearch: {} }] as any
   });
 
   const today = new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  const prompt = `Actúa como un Experto en Planeación Estratégica de la industria Oil & Gas con enfoque en Inteligencia de Mercados. 
-    Tu misión es generar el "Briefing Matutino de Inteligencia" de HOY (${today}) relacionado con temas del sector petrolero, cambios, proyecciones o estudios rigurosos de variables macroeconómicas.
-    
-    CRITICAL INSTRUCTION: Return ONLY a raw JSON string.
-    IMPORTANTE: Tus respuestas deben basarse en resultados de búsqueda reales y debes citar las fuentes.
+  const prompt = `ACTÚA COMO DIRECTOR SENIOR DE INTELIGENCIA ESTRATÉGICA O&G.
+HORA ACTUAL: ${new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' })}.
 
-    JSON Structure:
-    {
-      "lastUpdated": "Reporte Estratégico - ${today}",
-      "pillars": [{ "title": "...", "sentiment": "BULLISH", "context": "...", "implication": "..." }],
-      "macro": { "sentiment": "NEUTRAL", "description": "...", "recommendation": "..." },
-      "actions": [{ "focus": "...", "risk": "...", "action": "..." }]
-    }`;
+TU TAREA: Generar un reporte dual que separe la información por "Ventana de Tiempo".
+
+INSTRUCCIONES DE INVESTIGACIÓN:
+1. BLOQUE "BREAKING" (Últimas 0-12h): Busca noticias publicadas hace minutos/horas. Enfoque en Tickers de precios vivos, incidentes geopolíticos y aperturas de mercado.
+2. BLOQUE "RECAP" (Últimas 24-36h): Busca noticias y reportes de la jornada anterior. Enfoque en estudios rigurosos, cierres de contratos, y proyecciones macroeconómicas consolidadas.
+
+ESTRUCTURA JSON OBLIGATORIA:
+{
+  "lastUpdated": "ACTUALIZACIÓN MATUTINA - ${today}",
+  "breaking": [
+    { "title": "...", "context": "Noticia de hace minutos...", "implication": "..." }
+  ],
+  "historyRecap": [
+    { "title": "...", "context": "Resumen de lo ocurrido hace 24-36h...", "impact": "Cómo afecta la base de la semana..." }
+  ],
+  "macro": { ... },
+  "actions": [ ... ]
+}
+
+REGLA DE CALIDAD: No dupliques información. Si algo está en 'Breaking', no debe estar en 'History'.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
