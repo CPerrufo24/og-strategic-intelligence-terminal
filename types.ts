@@ -1,4 +1,3 @@
-
 export type Sentiment = 'BULLISH' | 'BEARISH' | 'NEUTRAL';
 
 export interface Source {
@@ -20,6 +19,13 @@ export interface PillarContent {
   implication: string;
 }
 
+// Interfaz para la memoria estratégica (24-36h)
+export interface HistoryItem {
+  title: string;
+  context: string;
+  impact: string;
+}
+
 export interface MacroRisk {
   sentiment: Sentiment;
   description: string;
@@ -33,7 +39,8 @@ export interface StrategicAction {
 }
 
 export interface StrategicBrief {
-  pillars: PillarContent[];
+  pillars: PillarContent[];     // Inteligencia Breaking (0-12h)
+  historyRecap: HistoryItem[]; // Memoria Estratégica (24-36h)
   macro: MacroRisk;
   actions: StrategicAction[];
   lastUpdated: string;
