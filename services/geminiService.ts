@@ -21,7 +21,7 @@ const generateLocalBrief = async (): Promise<StrategicBrief> => {
   // CORRECCIÓN: Usar el modelo gemini-2.0-flash (es el que tiene cuota en tu lista)
   // Nota: Si el modelo 2.5 da error de cuota, cámbialo a "gemini-1.5-flash"
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-3-pro-preview",
     // CORRECCIÓN: Añadimos la herramienta de búsqueda para noticias reales
     // tools: [{ googleSearch: {} }] // Note: googleSearch might need specific setup or checking SDK version support
   });
