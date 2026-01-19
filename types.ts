@@ -41,7 +41,7 @@ export interface StrategicAction {
 }
 
 export interface StrategicBrief {
-  pillars: PillarContent[];     // Inteligencia Breaking (0-12h)
+  breaking: PillarContent[];     // Inteligencia Breaking (0-12h)
   historyRecap: HistoryItem[]; // Memoria Estratégica (24-36h)
   macro: MacroRisk;
   actions: StrategicAction[];

@@ -158,17 +158,17 @@ const App: React.FC = () => {
                 </span>
               </div>
               <div className="space-y-6">
-                {brief.pillars?.map((pillar, idx) => (
+                {brief.breaking?.map((item, idx) => (
                   <AnalysisCard
                     key={idx}
-                    title={pillar.title}
-                    sentiment={pillar.sentiment}
+                    title={item.title}
+                    sentiment={item.sentiment}
                     borderColor="border-oil-gold"
-                    sources={pillar.sources}
+                    sources={item.sources}
                   >
-                    <p className="mb-3 text-slate-600"><strong>Análisis:</strong> {pillar.context}</p>
+                    <p className="mb-3 text-slate-600"><strong>Análisis:</strong> {item.context}</p>
                     <div className="p-3 bg-slate-50 border-l-4 border-oil-gold rounded-r text-xs text-oil-navy font-medium italic">
-                      "Implicación: {pillar.implication}"
+                      "Implicación: {item.implication}"
                     </div>
                   </AnalysisCard>
                 ))}

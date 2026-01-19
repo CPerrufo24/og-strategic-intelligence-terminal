@@ -25,7 +25,6 @@ const generateLocalBrief = async (): Promise<StrategicBrief> => {
   const today = new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const currentTime = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
 
-  /* MASTER PROMPT: CRONOLOGÍA + FUENTES INDIVIDUALES */
   const prompt = `ACTÚA COMO DIRECTOR SENIOR DE INTELIGENCIA ESTRATÉGICA O&G.
 HORA ACTUAL EN MÉXICO: ${currentTime}.
 
@@ -67,19 +66,39 @@ ESTRUCTURA JSON OBLIGATORIA:
   ]
 }
 
-REGLA: No dupliques información entre bloques. Si no encuentras una fuente específica para un item, deja el array "sources" vacío para ese item.`;
+REGLA CRÍTICA DE LINKS: ÚNICAMENTE utiliza URLs que provengan directamente de tus metadatos de búsqueda (grounding). Prohibido inventar, suponer o truncar URLs basándose en el título. Si no tienes la URL exacta y verificada que usaste para el análisis, NO pongas nada en el campo 'sources'. Es preferible un array vacío que un link roto.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
-  const rawText = response.text();
 
-  let brief;
-  try {
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    brief = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
-  } catch (e) {
-    throw new Error("La IA no devolvió un formato JSON válido.");
+  const text = response.text();
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+
+  if (!jsonMatch) {
+    throw new Error("Formato JSON no identificado en la respuesta de IA.");
   }
+
+  const brief = JSON.parse(jsonMatch[0]) as StrategicBrief;
+
+  // FALLBACK ALGORÍTMICO: GOOGLE NEWS SEARCH
+  // Si la IA obedeció la regla estricta y mandó sources vacíos, generamos un link de búsqueda funcional.
+  const injectFallbackLinks = (items: any[]) => {
+    return items.map(item => {
+      if (!item.sources || item.sources.length === 0) {
+        return {
+          ...item,
+          sources: [{
+            title: "Ver Cobertura Completa ↗",
+            uri: `https://www.google.com/search?q=${encodeURIComponent(item.title)}&tbm=nws`
+          }]
+        };
+      }
+      return item;
+    });
+  };
+
+  if (brief.breaking) brief.breaking = injectFallbackLinks(brief.breaking);
+  if (brief.historyRecap) brief.historyRecap = injectFallbackLinks(brief.historyRecap);
 
   /* FALLBACK GLOBAL SOURCES (Grounding Metadata) */
   const globalSources: Source[] = [];

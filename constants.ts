@@ -31,7 +31,7 @@ export const INITIAL_PRODUCTION: ProductionData[] = [
 
 export const INITIAL_BRIEF: StrategicBrief = {
   lastUpdated: 'Sincronizando terminal...',
-  pillars: [],      // Importante: Array vacío
+  breaking: [],      // Importante: Array vacío
   historyRecap: [], // Importante: Array vacío
   macro: {
     sentiment: 'NEUTRAL',
