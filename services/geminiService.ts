@@ -19,35 +19,55 @@ const generateLocalBrief = async (): Promise<StrategicBrief> => {
 
   const model = genAI.getGenerativeModel({
     model: "gemini-3-pro-preview",
-    // CORRECCIÓN 1: Forzamos el tipo 'as any' para que acepte googleSearch
     tools: [{ googleSearch: {} }] as any
   });
 
   const today = new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const currentTime = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
 
+  /* MASTER PROMPT: CRONOLOGÍA + FUENTES INDIVIDUALES */
   const prompt = `ACTÚA COMO DIRECTOR SENIOR DE INTELIGENCIA ESTRATÉGICA O&G.
-HORA ACTUAL: ${new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' })}.
+HORA ACTUAL EN MÉXICO: ${currentTime}.
 
-TU TAREA: Generar un reporte dual que separe la información por "Ventana de Tiempo".
+TU TAREA: Generar un reporte dual separado por ventanas de tiempo.
 
 INSTRUCCIONES DE INVESTIGACIÓN:
-1. BLOQUE "BREAKING" (Últimas 0-12h): Busca noticias publicadas hace minutos/horas. Enfoque en Tickers de precios vivos, incidentes geopolíticos y aperturas de mercado.
-2. BLOQUE "RECAP" (Últimas 24-36h): Busca noticias y reportes de la jornada anterior. Enfoque en estudios rigurosos, cierres de contratos, y proyecciones macroeconómicas consolidadas.
+1. BLOQUE "BREAKING" (Últimas 0-12h): Busca noticias publicadas hace minutos u horas. Enfoque en Tickers de precios vivos, incidentes geopolíticos repentinos y anuncios matutinos.
+2. BLOQUE "HISTORY RECAP" (Últimas 24-48h): Busca noticias y reportes de la jornada anterior. Enfoque en estudios rigurosos, cierres de contratos y proyecciones macro consolidadas.
+
+INSTRUCCIONES DE FUENTES:
+- Para CADA noticia (item), debes buscar y asignar URLs reales y específicas que validen la información en el campo "sources".
 
 ESTRUCTURA JSON OBLIGATORIA:
 {
-  "lastUpdated": "ACTUALIZACIÓN MATUTINA - ${today}",
+  "lastUpdated": "INTELIGENCIA ESTRATÉGICA - ${today}",
   "breaking": [
-    { "title": "...", "context": "Noticia de hace minutos...", "implication": "..." }
+    { 
+      "title": "Titular de Alto Impacto (0-12h)", 
+      "context": "Contexto inmediato...", 
+      "implication": "Implicación operativa...",
+      "sources": [ { "title": "Fuente", "uri": "https://..." } ]
+    }
   ],
   "historyRecap": [
-    { "title": "...", "context": "Resumen de lo ocurrido hace 24-36h...", "impact": "Cómo afecta la base de la semana..." }
+    { 
+      "title": "Titular Jornada Previa (24-48h)", 
+      "context": "Contexto histórico reciente...", 
+      "impact": "Impacto en la base de la semana...",
+      "sources": [ { "title": "Fuente", "uri": "https://..." } ]
+    }
   ],
-  "macro": { ... },
-  "actions": [ ... ]
+  "macro": {
+    "sentiment": "BULLISH/BEARISH/NEUTRAL",
+    "description": "Análisis de variables macro...",
+    "recommendation": "Recomendación estratégica..."
+  },
+  "actions": [
+    { "focus": "Área", "risk": "Riesgo", "action": "Acción" }
+  ]
 }
 
-REGLA DE CALIDAD: No dupliques información. Si algo está en 'Breaking', no debe estar en 'History'.`;
+REGLA: No dupliques información entre bloques. Si no encuentras una fuente específica para un item, deja el array "sources" vacío para ese item.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
@@ -61,9 +81,8 @@ REGLA DE CALIDAD: No dupliques información. Si algo está en 'Breaking', no deb
     throw new Error("La IA no devolvió un formato JSON válido.");
   }
 
+  /* FALLBACK GLOBAL SOURCES (Grounding Metadata) */
   const globalSources: Source[] = [];
-
-  // CORRECCIÓN 2: Forzamos 'as any' en el candidato para acceder a metadatos experimentales
   const candidate = response.candidates?.[0] as any;
   const groundingMetadata = candidate?.groundingMetadata;
 
@@ -75,14 +94,6 @@ REGLA DE CALIDAD: No dupliques información. Si algo está en 'Breaking', no deb
           title: chunk.web.title
         });
       }
-    });
-  }
-
-  // CORRECCIÓN 3: Acceso seguro a searchEntryPoint
-  if (globalSources.length === 0 && groundingMetadata?.searchEntryPoint?.renderedHtml) {
-    globalSources.push({
-      uri: "https://google.com/search?q=noticias+petroleo+mexico+hoy",
-      title: "Ver fuentes en Google Search"
     });
   }
 

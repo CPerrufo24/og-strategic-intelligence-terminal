@@ -17,6 +17,7 @@ export interface PillarContent {
   sentiment: Sentiment;
   context: string;
   implication: string;
+  sources?: Source[];
 }
 
 // Interfaz para la memoria estratégica (24-36h)
@@ -24,6 +25,7 @@ export interface HistoryItem {
   title: string;
   context: string;
   impact: string;
+  sources?: Source[];
 }
 
 export interface MacroRisk {
