@@ -12,21 +12,42 @@ const App: React.FC = () => {
   const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // CACHE STRATEGY: Load from local storage immediately
+  // CACHE STRATEGY: Smart Cache by Date
   useEffect(() => {
-    const cached = localStorage.getItem('og_strategic_brief');
-    if (cached) {
+    const cachedData = localStorage.getItem('og_strategic_brief');
+    // Generar fecha de hoy formato DD/MM/YYYY para comparar
+    const today = new Date().toLocaleDateString('es-MX');
+
+    if (cachedData) {
       try {
-        setBrief(JSON.parse(cached));
-        setInitialLoad(false); // Show content immediately if cache exists
+        const parsed = JSON.parse(cachedData);
+        // Verificar si el caché es de hoy (buscando la fecha en lastUpdated o en un campo timestamp si existiera)
+        // Como lastUpdated trae texto, usaremos una lógica simple: si existe caché, lo mostramos.
+        // PERO idealmente guardamos { date, data }. Por compatibilidad con estructura simple, 
+        // asumiremos que si el string lastUpdated contiene la fecha de hoy, es válido.
+        if (parsed.lastUpdated && parsed.lastUpdated.includes(today)) {
+          setBrief(parsed);
+          setInitialLoad(false);
+          return; // Datos frescos, no llamar API
+        } else if (parsed) {
+          // Datos viejos: mostramos mientras carga nuevos
+          setBrief(parsed);
+          setInitialLoad(false);
+        }
       } catch (e) {
-        console.error("Cache corrupto", e);
+        console.error("Cache inválido", e);
       }
     }
+    // Si no hay caché válido de hoy, se ejecutará el effect de fetch abajo
   }, []);
 
   const handleRefreshBrief = useCallback(async (isBackground = false) => {
-    if (!isBackground) setLoading(true);
+    // Si es background, no activamos loading global visual
+    if (!isBackground) {
+      setLoading(true);
+      // Limpiar caché si es manual para forzar actualización real
+      localStorage.removeItem('og_strategic_brief');
+    }
     setError(null);
     try {
       const newBrief = await generateStrategicBrief();
@@ -35,17 +56,36 @@ const App: React.FC = () => {
       if (initialLoad) setInitialLoad(false);
     } catch (err) {
       console.error(err);
-      setError("Conexión inestable. Mostrando última inteligencia válida.");
-      if (initialLoad) setInitialLoad(false); // Fallback to initial state or cache
+      setError("Enlace inestable. Manteniendo última inteligencia.");
+      if (initialLoad) setInitialLoad(false);
       setTimeout(() => setError(null), 5000);
     } finally {
       if (!isBackground) setLoading(false);
     }
   }, [initialLoad]);
 
-  // Initial fetch (background if cache exists)
+  // Initial fetch: Solo si no tenemos datos frescos cargados por el effect de arriba?
+  // Simplificación: El effect de arriba carga caché. Este effect corre siempre al montar.
+  // Modificamos para que solo corra si NO se cargó caché fresco de hoy.
+  // Como isInitialLoad cambia, controlamos con un ref o chequeo simple.
   useEffect(() => {
-    handleRefreshBrief(true);
+    const checkAndFetch = async () => {
+      const cachedData = localStorage.getItem('og_strategic_brief');
+      const today = new Date().toLocaleDateString('es-MX');
+      let needsFetch = true;
+
+      if (cachedData) {
+        const parsed = JSON.parse(cachedData);
+        if (parsed.lastUpdated && parsed.lastUpdated.includes(today)) {
+          needsFetch = false; // Ya tenemos datos de hoy
+        }
+      }
+
+      if (needsFetch) {
+        handleRefreshBrief(true); // Background fetch
+      }
+    };
+    checkAndFetch();
   }, [handleRefreshBrief]);
 
   if (initialLoad) {
@@ -55,7 +95,7 @@ const App: React.FC = () => {
           <div className="w-16 h-16 border-4 border-slate-200 rounded-full"></div>
           <div className="absolute top-0 w-16 h-16 border-t-4 border-oil-gold rounded-full animate-spin"></div>
         </div>
-        <h1 className="text-xl font-sans font-bold tracking-widest uppercase text-oil-navy">Estableciendo Enlace Satelital Segudo</h1>
+        <h1 className="text-xl font-sans font-bold tracking-widest uppercase text-oil-navy">Estableciendo Enlace Satelital Seguro</h1>
         <p className="text-slate-400 text-xs tracking-widest mt-2 uppercase">Descifrando vectores de mercado...</p>
       </div>
     );
@@ -66,7 +106,7 @@ const App: React.FC = () => {
       <Ticker initialTickers={INITIAL_TICKERS} />
 
       {/* HEADER PROFESSIONAL */}
-      <header className="bg-white pt-12 pb-16 px-6 text-center border-b border-gray-200 relative shadow-sm z-30">
+      <header className="bg-white pt-10 pb-14 px-6 text-center border-b border-gray-200 relative shadow-sm z-30">
         <div className="max-w-7xl mx-auto relative">
           <div className="absolute top-0 right-0">
             <button
@@ -74,12 +114,12 @@ const App: React.FC = () => {
               disabled={loading}
               className={`px-5 py-2 rounded text-[10px] font-bold tracking-widest transition-all border ${loading ? 'bg-slate-100 text-slate-400 border-transparent' : 'bg-white text-oil-navy border-slate-200 hover:border-oil-gold hover:text-oil-gold shadow-sm'}`}
             >
-              {loading ? 'ACTUALIZANDO...' : 'ACTUALIZAR INTELIGENCIA'}
+              {loading ? 'ACTUALIZANDO...' : 'ACTUALIZAR ANÁLISIS'}
             </button>
           </div>
 
           <h1 className="text-3xl md:text-4xl font-condensed font-bold tracking-wider mb-2 text-oil-navy">
-            STRATEGIC <span className="text-oil-gold">TERMINAL</span>
+            O&G INTELLIGENCE <span className="text-oil-gold">BRIEFING</span>
           </h1>
           <div className="flex justify-center items-center gap-3">
             <div className="h-px w-12 bg-oil-gold/30"></div>
@@ -105,7 +145,7 @@ const App: React.FC = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2 space-y-10">
 
             {/* SECCIÓN 1: BREAKING (0-12h) */}
@@ -126,9 +166,9 @@ const App: React.FC = () => {
                     borderColor="border-oil-gold"
                     sources={pillar.sources}
                   >
-                    <p className="mb-4 text-slate-600"><strong>Análisis:</strong> {pillar.context}</p>
-                    <div className="p-4 bg-slate-50 border-l-4 border-oil-gold rounded-r text-xs text-oil-navy font-medium italic">
-                      "Implicación Táctica: {pillar.implication}"
+                    <p className="mb-3 text-slate-600"><strong>Análisis:</strong> {pillar.context}</p>
+                    <div className="p-3 bg-slate-50 border-l-4 border-oil-gold rounded-r text-xs text-oil-navy font-medium italic">
+                      "Implicación: {pillar.implication}"
                     </div>
                   </AnalysisCard>
                 ))}
@@ -209,18 +249,7 @@ const App: React.FC = () => {
             We can remove the global sources section to keep it clean, or keep it as a 'Bibliografía' at bottom.
             Let's keep it discrete.
         */}
-        {brief.globalSources?.length > 0 && (
-          <div className="mt-16 pt-8 border-t border-slate-200">
-            <h5 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-4 text-center">Referencias Adicionales</h5>
-            <div className="flex flex-wrap gap-4 justify-center">
-              {brief.globalSources.map((s, i) => (
-                <a key={i} href={s.uri} target="_blank" rel="noopener noreferrer" className="text-[9px] text-slate-500 hover:text-oil-navy uppercase tracking-wider transition-colors">
-                  {s.title}
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Global sources removed for cleaner UI as per design request */}
       </main>
 
       <footer className="mt-0 py-12 text-center bg-white border-t border-slate-200 z-10 relative">

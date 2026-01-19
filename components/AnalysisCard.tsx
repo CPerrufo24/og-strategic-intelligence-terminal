@@ -22,21 +22,18 @@ const AnalysisCard: React.FC<AnalysisCardProps> = ({ title, sentiment, borderCol
         {children}
       </div>
       {sources && sources.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <span className="text-[10px] font-bold text-oil-gold uppercase tracking-widest block mb-2">Fuentes Verificadas:</span>
-          <div className="flex flex-wrap gap-2">
-            {sources.map((source, idx) => (
-              <a
-                key={idx}
-                href={source.uri}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] bg-slate-50 px-2 py-1 rounded hover:bg-oil-gold hover:text-white transition-colors border border-slate-200 text-oil-navy font-medium"
-              >
-                {source.title.length > 30 ? source.title.substring(0, 30) + '...' : source.title} ↗
-              </a>
-            ))}
-          </div>
+        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2">
+          {sources.map((source, idx) => (
+            <a
+              key={idx}
+              href={source.uri}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[10px] bg-slate-50 hover:bg-oil-navy hover:text-white text-slate-500 font-medium px-3 py-1.5 rounded transition-all border border-slate-200"
+            >
+              Leer noticia completa ↗
+            </a>
+          ))}
         </div>
       )}
     </div>
