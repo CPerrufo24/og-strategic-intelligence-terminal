@@ -190,7 +190,19 @@ const App: React.FC = () => {
                     <div className="pt-3 border-t border-slate-200">
                       <p className="text-[10px] font-semibold text-slate-400 italic">Impacto: {item.impact}</p>
                       {item.sources && item.sources.length > 0 && (
-                        <div className="mt-2 text-[9px] text-slate-400 truncate">Fuente: {item.sources[0].title}</div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {item.sources.map((source, sIdx) => (
+                            <a
+                              key={sIdx}
+                              href={source.uri}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[9px] bg-white border border-slate-200 hover:border-oil-gold hover:text-oil-navy text-slate-400 px-2 py-1 rounded transition-colors"
+                            >
+                              Leer Fuente ↗
+                            </a>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
