@@ -18,7 +18,7 @@ const generateLocalBrief = async (): Promise<StrategicBrief> => {
   const genAI = new GoogleGenerativeAI(apiKey);
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-3-flash",
+    model: "gemini-3-pro-preview",
     // CORRECCIÓN 1: Forzamos el tipo 'as any' para que acepte googleSearch
     tools: [{ googleSearch: {} }] as any
   });
