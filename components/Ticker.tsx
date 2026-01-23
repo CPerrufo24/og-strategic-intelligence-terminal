@@ -21,13 +21,13 @@ const Ticker: React.FC<TickerProps> = ({ initialTickers }) => {
   }, []);
 
   return (
-    <div className="bg-white text-oil-navy py-2 overflow-hidden sticky top-0 z-50 border-b border-gray-200 shadow-sm">
-      <div className="flex justify-center items-center gap-12 font-condensed text-xs md:text-sm tracking-wider animate-pulse-slow whitespace-nowrap">
+    <div className="bg-black text-white py-1.5 overflow-hidden sticky top-0 z-50 border-b border-white/10 shadow-lg">
+      <div className="flex justify-center items-center gap-12 font-condensed text-[10px] tracking-[0.2em] animate-pulse-slow whitespace-nowrap uppercase">
         {tickers.map((ticker) => (
           <div key={ticker.symbol} className="flex items-center gap-2">
-            <span className="font-bold opacity-70 text-slate-500">{ticker.symbol}:</span>
-            <span className="font-bold text-slate-800">{ticker.price.toFixed(2)}</span>
-            <span className={`font-bold ${ticker.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <span className="font-bold text-oil-gold">{ticker.symbol}:</span>
+            <span className="font-bold">{ticker.price.toFixed(2)} USD</span>
+            <span className={`font-bold ${ticker.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               {ticker.change >= 0 ? '▲' : '▼'} {Math.abs(ticker.changePercent).toFixed(1)}%
             </span>
           </div>

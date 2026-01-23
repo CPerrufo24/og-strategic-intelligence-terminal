@@ -22,18 +22,24 @@ const AnalysisCard: React.FC<AnalysisCardProps> = ({ title, sentiment, borderCol
         {children}
       </div>
       {sources && sources.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2">
-          {sources.map((source, idx) => (
-            <a
-              key={idx}
-              href={source.uri}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[10px] bg-slate-50 hover:bg-oil-navy hover:text-white text-slate-500 font-medium px-3 py-1.5 rounded transition-all border border-slate-200"
-            >
-              Leer noticia completa ↗
-            </a>
-          ))}
+        <div className="mt-6">
+          <h4 className="text-[9px] font-bold text-oil-gold uppercase tracking-[0.2em] mb-2">Fuentes de Inteligencia:</h4>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            {sources.map((source, idx) => {
+              const domain = new URL(source.uri).hostname.replace('www.', '');
+              return (
+                <a
+                  key={idx}
+                  href={source.uri}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-slate-400 hover:text-oil-navy transition-colors flex items-center gap-1"
+                >
+                  <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{domain} /</span>
+                </a>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

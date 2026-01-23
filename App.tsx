@@ -105,36 +105,29 @@ const App: React.FC = () => {
     <div className="min-h-screen font-sans bg-[#F4F6F8] text-slate-800 pb-0">
       <Ticker initialTickers={INITIAL_TICKERS} />
 
-      {/* HEADER PROFESSIONAL */}
-      <header className="bg-white pt-10 pb-14 px-6 text-center border-b border-gray-200 relative shadow-sm z-30">
+      {/* HEADER PROFESSIONAL (Prototype Restoration) */}
+      <header className="bg-oil-navy pt-12 pb-16 px-6 text-center border-b border-oil-gold/20 relative shadow-2xl z-30">
         <div className="max-w-7xl mx-auto relative">
           <div className="absolute top-0 right-0">
             <button
               onClick={() => handleRefreshBrief(false)}
               disabled={loading}
-              className={`px-5 py-2 rounded text-[10px] font-bold tracking-widest transition-all border ${loading ? 'bg-slate-100 text-slate-400 border-transparent' : 'bg-white text-oil-navy border-slate-200 hover:border-oil-gold hover:text-oil-gold shadow-sm'}`}
+              className={`px-5 py-2 rounded text-[10px] font-bold tracking-widest transition-all ${loading ? 'bg-slate-700 text-slate-400' : 'bg-oil-gold text-oil-navy hover:bg-white hover:text-oil-navy shadow-lg shadow-oil-gold/20'}`}
             >
-              {loading ? 'ACTUALIZANDO...' : 'ACTUALIZAR ANÁLISIS'}
+              {loading ? 'SINCRONIZANDO...' : 'RECARGAR INTELIGENCIA'}
             </button>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-condensed font-bold tracking-wider mb-2 text-oil-navy">
-            O&G INTELLIGENCE <span className="text-oil-gold">BRIEFING</span>
+          <h1 className="text-4xl md:text-5xl font-condensed font-bold tracking-[0.2em] mb-4 text-white">
+            O&G STRATEGIC INTELLIGENCE
           </h1>
-          <div className="flex justify-center items-center gap-3">
-            <div className="h-px w-12 bg-oil-gold/30"></div>
-            <p className="text-slate-400 font-medium tracking-[0.2em] text-[10px] uppercase">
-              {brief.lastUpdated}
+          <div className="flex justify-center items-center gap-4">
+            <div className="h-px w-8 bg-oil-gold/30"></div>
+            <p className="text-oil-gold/80 font-medium tracking-[0.3em] text-[11px] uppercase">
+              {new Date().toISOString().split('T')[0]} | Terminal Ejecutiva
             </p>
-            <div className="h-px w-12 bg-oil-gold/30"></div>
+            <div className="h-px w-8 bg-oil-gold/30"></div>
           </div>
-        </div>
-
-        {/* MARKET PULSE BAR */}
-        <div className="absolute bottom-0 left-0 w-full bg-oil-navy text-white py-2 flex justify-center gap-8 md:gap-16 text-[9px] font-bold tracking-[0.2em] uppercase">
-          <span>Diferencial Maya: <span className="text-oil-gold">-$12.40 USD</span></span>
-          <span>Riesgo Geopolítico: <span className="text-red-400">ALTO</span></span>
-          <span className="hidden md:inline">Márgenes: <span className="text-green-400">OPTIMIZADOS ▲</span></span>
         </div>
       </header>
 
@@ -234,6 +227,26 @@ const App: React.FC = () => {
           </aside>
         </div>
 
+        {/* FUENTES DE VERIFICACIÓN HOY Bar */}
+        {brief.globalSources?.length > 0 && (
+          <div className="mt-16 bg-oil-navy rounded p-2 flex items-center gap-4 text-[10px] font-bold tracking-widest text-white border-l-4 border-oil-gold shadow-lg">
+            <span className="uppercase whitespace-nowrap">Fuentes de Verificación Hoy:</span>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {brief.globalSources.map((s, i) => (
+                <a
+                  key={i}
+                  href={s.uri}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-oil-gold hover:text-white underline transition-colors"
+                >
+                  {new URL(s.uri).hostname.replace('www.', '')}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Matriz Estratégica */}
         <div className="mt-16 overflow-hidden rounded-xl border border-slate-200 shadow-lg bg-white">
           <table className="w-full text-left">
@@ -264,16 +277,10 @@ const App: React.FC = () => {
         {/* Global sources removed for cleaner UI as per design request */}
       </main>
 
-      <footer className="mt-0 py-12 text-center bg-white border-t border-slate-200 z-10 relative">
-        <div className="flex flex-col items-center justify-center gap-2">
-          <div className="h-1 w-8 bg-oil-gold mb-2"></div>
-          <p className="text-slate-800 text-[10px] font-bold uppercase tracking-[0.3em]">
-            Inteligencia Estratégica Corporativa
-          </p>
-          <p className="text-slate-400 text-[9px] uppercase tracking-widest">
-            Powered by Gemini Advanced Architecture • 2026
-          </p>
-        </div>
+      <footer className="mt-20 py-16 text-center border-t border-slate-200">
+        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.5em]">
+          TERMINAL DE INTELIGENCIA ESTRATÉGICA | FUENTES DE DATOS EXTERNAS SINCRONIZADAS
+        </p>
       </footer>
     </div>
   );

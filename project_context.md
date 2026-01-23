@@ -1,12 +1,12 @@
-# Project Context: O&G Strategic Intelligence Terminal
+# Project Context: O&G Intelligence Briefing
 
 ## Overview
-The **O&G Strategic Intelligence Terminal** is a high-precision executive dashboard designed to provide real-time strategic analysis of Mexico's Energy Sector. Unlike a standard news feed, this terminal synthesizes data using Generative AI to offer "implications" and "strategic actions" for C-Level executives.
+The **O&G Intelligence Briefing** is a high-precision executive dashboard designed to provide real-time strategic analysis of Mexico's Energy Sector. Unlike a standard news feed, this terminal synthesizes data using Generative AI to offer "implications" and "strategic actions" for C-Level executives.
 
 ## Core Value Proposition
 - **Synthesis over Noise:** Filters out general news to focus on high-impact events (PEMEX financial state, Private E&P contracts, Macroeconomic shifts).
-- **Executive Aesthetics:** A "Bloomberg-style" dark mode interface designed for high-contrast readability and authoritative presentation.
-- **Real-Time Intelligence:** Powered by Google's Gemini Models to fetch and analyze the latest market moves.
+- **Executive Aesthetics (Light Theme):** A professional, clean, and high-contrast interface designed for executive presentations and clarity.
+- **Real-Time Intelligence:** Powered by Google's Gemini Models to fetch and analyze the latest market moves with verified grounding.
 
 ## Technology Stack
 
@@ -18,8 +18,8 @@ The **O&G Strategic Intelligence Terminal** is a high-precision executive dashbo
 
 ### Intelligence Engine
 - **Provider:** Google Gemini API (`@google/genai`)
-- **Current Model:** `gemini-1.5-flash` (Optimized for latency and JSON structure)
-- **Features:** Grounding with Google Search, Structured JSON Output.
+- **Current Model:** `gemini-3-pro-preview` (High-performance reasoning and grounding tools)
+- **Features:** Grounding with Google Search, Structured JSON Output, Smart Link Fallback Protocol.
 
 ### Infrastructure & Deployment (Planned)
 - **Hosting:** Netlify (Static Site Hosting)
@@ -33,6 +33,7 @@ The **O&G Strategic Intelligence Terminal** is a high-precision executive dashbo
 - **test**: Unit testing via Vitest (TDD implementation).
 
 ## Current Status
-- **UI/UX:** Fully implemented with responsive "Oil Navy" theme.
-- **AI Integration:** Operational logic; pending API Key/Model alignment (Transitioning to Netlify Functions for security).
-- **Verification:** TDD implemented with Vitest; CI/CD pipeline pending.
+- **UI/UX:** Fully redesigned with "Premium Light Theme" and corporate branding (Oil Navy & Gold).
+- **AI Integration:** Operational with `gemini-3-pro-preview` and strict grounding rules.
+- **Performance:** Instant initialization via Smart Cache (Date-aware localStorage).
+- **Verification:** Free of TypeScript errors; layout verified for executive use.

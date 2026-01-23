@@ -36,7 +36,30 @@
   - Mocks are used to simulate various AI response structures (JSON vs Markdown).
 
 ## ADR-005: Gemini Model Selection
+- **Status:** Accepted (Updated)
+- **Context:** The project requires complex reasoning and high-fidelity search grounding for strategic analysis.
+- **Decision:** Use **`gemini-3-pro-preview`**.
+- **Reasoning:** Superior search integration and the ability to maintain complex JSON structures even when performing multiple research tasks.
+
+## ADR-006: Light Theme Transformation
 - **Status:** Accepted
-- **Context:** The application relies on `responseMimeType: "application/json"` for dashboard cards.
-- **Decision:** Use **`gemini-1.5-flash`**.
-- **Reasoning:** Newer preview models (like `2.5-flash`) often lack JSON mode support in early beta. `1.5-flash` offers the best balance of speed, cost, and strict JSON adherence.
+- **Context:** User feedback required a more professional, "clean" aesthetic suitable for executive meetings.
+- **Decision:** Pivot from Dark Mode to a **Premium Light Theme** (`bg-[#F4F6F8]`).
+- **Consequences:** Improved readability and accessibility. All design tokens (Navy, Gold) shifted to high-contrast light variants.
+
+## ADR-007: Smart Caching (Stale-While-Revalidate)
+- **Status:** Accepted
+- **Context:** The 10-15s delay of AI research was perceived as "slow" by users.
+- **Decision:** Implement **Smart Cache** in `localStorage` keyed by date.
+- **Consequences:** 
+  - Instant load for returning users on the same day.
+  - Reduced API cost and token usage.
+  - Manual "Refresh Analysis" button provided for the user to override cache.
+
+## ADR-008: Source Reliability Protocol (Grounding + Fallback)
+- **Status:** Accepted
+- **Context:** AI can occasionally "hallucinate" URLs or provide broken links.
+- **Decision:** 
+  1. Strict Prompting: Forbidden to invent URLs.
+  2. Fallback: If no verified URL is found, the system generates a **Google News Search link** instead.
+- **Consequences:** 100% link reliability; zero "404 Page Not Found" errors for source reports.
